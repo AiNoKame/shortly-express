@@ -11,6 +11,8 @@ var Click = require('./app/models/click');
 
 var app = express();
 
+var loggedIn = true;
+
 app.configure(function() {
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
@@ -20,17 +22,29 @@ app.configure(function() {
 });
 
 app.get('/', function(req, res) {
-  res.render('index');
+  if (loggedIn) {
+    res.render('index');
+  } else {
+    res.redirect(301, 'http://127.0.0.1:4568/login');
+  }
 });
 
 app.get('/create', function(req, res) {
-  res.render('index');
+  if (loggedIn) {
+    res.render('index');
+  } else {
+    res.redirect(301, 'http://127.0.0.1:4568/login');
+  }
 });
 
 app.get('/links', function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.send(200, links.models);
-  })
+  if (loggedIn) {
+    Links.reset().fetch().then(function(links) {
+      res.send(200, links.models);
+    })
+  } else {
+    res.redirect(301, 'http://127.0.0.1:4568/login');
+  }
 });
 
 app.post('/links', function(req, res) {
@@ -69,6 +83,9 @@ app.post('/links', function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+app.get('/login', function(req, res) {
+ res.render('login');
+});
 
 
 
