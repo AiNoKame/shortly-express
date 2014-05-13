@@ -87,6 +87,27 @@ app.get('/login', function(req, res) {
  res.render('login');
 });
 
+app.get('/signup', function(req, res) {
+  res.render('signup');
+
+});
+
+app.post('/signup', function(req, res) {
+  console.log(req.body.username);
+
+  var user = new User({
+    username: req.body.username,
+    password: req.body.password,
+    created_at: new Date(),
+    updated_at: new Date()
+  });
+
+  user.save().then(function(newUser) {
+    Users.add(newUser);
+    res.redirect(301, 'http://127.0.0.1:4568/');
+  });
+});
+
 
 
 /************************************************************/

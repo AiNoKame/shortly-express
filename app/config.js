@@ -41,9 +41,36 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
   }
 });
 
+
+
+
+db.knex.schema.hasTable('users').then(function(exists) {
+  if (!exists) {
+    db.knex.schema.createTable('users', function(user) {
+      user.increments('id').primary();
+      user.string('username', 100);
+      user.string('password', 100);
+      user.datetime('created_at');
+      user.datetime('updated_at');
+    }).then(function(table) {
+      console.log('Created Table', tables);
+    });
+  }
+});
+
 /************************************************************/
 // Add additional schema definitions below
 /************************************************************/
 
 
 module.exports = db;
+
+
+
+// sqlite>  pragma table_info(users);
+// 0|id|integer|1||1
+// 1|username|varchar(100)|0||0
+// 2|password|varchar(100)|0||0
+// 3|created_at|datetime|0||0
+// 4|updated_at|datetime|0||0
+// sqlite> 
