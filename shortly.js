@@ -12,7 +12,7 @@ var bcrypt = require('bcrypt-nodejs');
 
 var app = express();
 
-var loggedIn = true;
+var loggedIn;
 
 app.configure(function() {
   app.set('views', __dirname + '/views');
@@ -86,21 +86,35 @@ app.post('/links', function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+app.get('/logout', function(req, res) {
+  req.session.destroy(function(){
+    loggedIn = undefined;
+    res.redirect('/');
+  });
+});
+
 app.get('/login', function(req, res) {
- res.render('login');
+  res.render('login');
+});
+
+app.post('/login', function(req, res) {
+ //res.render('login');
  var username = req.body.username;
  var password = req.body.password;
 
  new User({username: username}).fetch().then(function(user) {
   if(!user) {
-    res.redirect('/login');
+    res.redirect(301, '/login');
   } else {
     bcrypt.compare(password, user.get('password'), function(err, match) {
       if(match) {
-        // must create new sessionutil.createSession 
-        res.redirect('/');
+        req.session.regenerate(function(){
+          req.session.user = username;
+          loggedIn = req.session.user;
+          res.redirect(301, '/');
+        });
       } else {
-        res.redirect('/login');
+        res.redirect(301, '/login');
       }
     });
   }
@@ -114,10 +128,10 @@ app.get('/signup', function(req, res) {
 
 app.post('/signup', function(req, res) {
   var username = req.body.username;
+  var password = req.body.password;
   new User({username: username}).fetch().then(function(user) {
-    console.log(user, ' should be undefined');
     if(!user) {
-      bcrypt.hash(req.body.password, null, null, function(err, hash) {
+      bcrypt.hash(password, null, null, function(err, hash) {
         if(err) {
           throw err;
         } else {
@@ -127,17 +141,23 @@ app.post('/signup', function(req, res) {
           });
 
           user.save().then(function(newUser) {
-            //newUser.hashPass();
             Users.add(newUser);
-            res.redirect(301, '/');
+            req.session.regenerate(function(){
+              req.session.user = username;
+              loggedIn = req.session.user;
+              res.redirect(301, '/');
+            });
           });
         }
       });
     } else {
       bcrypt.compare(password, user.get('password'), function(err, match) {
         if(match) {
-          // must create new sessionutil.createSession 
-          res.redirect('/');
+          req.session.regenerate(function(){
+            req.session.user = username;
+            loggedIn = req.session.user;
+            res.redirect(301, '/');
+          });
         } else {
           res.redirect('/login');
         }

@@ -13,8 +13,8 @@ var Link = require('../app/models/link');
 // Swap the commented lines or remove the 'x' from beforeEach
 // when working on authentication tests.
 /************************************************************/
-//var xbeforeEach = beforeEach;
-var xbeforeEach = function(){};
+var xbeforeEach = beforeEach;
+//var xbeforeEach = function(){};
 /************************************************************/
 
 
@@ -60,7 +60,7 @@ describe('', function() {
       });
   });
 
-  describe('Link creation:', function(){
+  xdescribe('Link creation:', function(){
 
     var requestWithSession = request.defaults({jar: true});
 
@@ -101,7 +101,7 @@ describe('', function() {
       });
     });
 
-    describe('Shortening links:', function(){
+    xdescribe('Shortening links:', function(){
 
       var options = {
         'method': 'POST',
@@ -150,7 +150,7 @@ describe('', function() {
 
     }); // 'Shortening links'
 
-    describe('With previously saved urls:', function(){
+    xdescribe('With previously saved urls:', function(){
 
       var link;
 
@@ -238,7 +238,7 @@ describe('', function() {
 
   }); // 'Priviledged Access'
 
-  describe('Account Creation:', function(){
+  xdescribe('Account Creation:', function(){
 
     it('Signup creates a user record', function(done) {
       var options = {
@@ -286,7 +286,7 @@ describe('', function() {
 
   }); // 'Account Creation'
 
-  xdescribe('Account Login:', function(){
+  describe('Account Login:', function(){
 
     var requestWithSession = request.defaults({jar: true});
 
