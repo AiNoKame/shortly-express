@@ -8,6 +8,7 @@ var User = require('./app/models/user');
 var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
+var bcrypt = require('bcrypt-nodejs');
 
 var app = express();
 
@@ -19,13 +20,15 @@ app.configure(function() {
   app.use(partials());
   app.use(express.bodyParser())
   app.use(express.static(__dirname + '/public'));
+  app.use(express.cookieParser('this is the cookie, shugga'));
+  app.use(express.session());
 });
 
 app.get('/', function(req, res) {
   if (loggedIn) {
     res.render('index');
   } else {
-    res.redirect(301, 'http://127.0.0.1:4568/login');
+    res.redirect(301, '/login');
   }
 });
 
@@ -33,7 +36,7 @@ app.get('/create', function(req, res) {
   if (loggedIn) {
     res.render('index');
   } else {
-    res.redirect(301, 'http://127.0.0.1:4568/login');
+    res.redirect(301, '/login');
   }
 });
 
@@ -43,7 +46,7 @@ app.get('/links', function(req, res) {
       res.send(200, links.models);
     })
   } else {
-    res.redirect(301, 'http://127.0.0.1:4568/login');
+    res.redirect(301, '/login');
   }
 });
 
@@ -85,6 +88,23 @@ app.post('/links', function(req, res) {
 /************************************************************/
 app.get('/login', function(req, res) {
  res.render('login');
+ var username = req.body.username;
+ var password = req.body.password;
+
+ new User({username: username}).fetch().then(function(user) {
+  if(!user) {
+    res.redirect('/login');
+  } else {
+    bcrypt.compare(password, user.get('password'), function(err, match) {
+      if(match) {
+        // must create new sessionutil.createSession 
+        res.redirect('/');
+      } else {
+        res.redirect('/login');
+      }
+    });
+  }
+ });
 });
 
 app.get('/signup', function(req, res) {
@@ -93,19 +113,37 @@ app.get('/signup', function(req, res) {
 });
 
 app.post('/signup', function(req, res) {
-  console.log(req.body.username);
+  var username = req.body.username;
+  new User({username: username}).fetch().then(function(user) {
+    console.log(user, ' should be undefined');
+    if(!user) {
+      bcrypt.hash(req.body.password, null, null, function(err, hash) {
+        if(err) {
+          throw err;
+        } else {
+          var user = new User({
+            username: username,
+            password: hash
+          });
 
-  var user = new User({
-    username: req.body.username,
-    password: req.body.password,
-    created_at: new Date(),
-    updated_at: new Date()
-  });
-
-  user.save().then(function(newUser) {
-    Users.add(newUser);
-    res.redirect(301, 'http://127.0.0.1:4568/');
-  });
+          user.save().then(function(newUser) {
+            //newUser.hashPass();
+            Users.add(newUser);
+            res.redirect(301, '/');
+          });
+        }
+      });
+    } else {
+      bcrypt.compare(password, user.get('password'), function(err, match) {
+        if(match) {
+          // must create new sessionutil.createSession 
+          res.redirect('/');
+        } else {
+          res.redirect('/login');
+        }
+      });
+    }
+ });
 });
 
 

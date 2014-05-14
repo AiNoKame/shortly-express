@@ -50,10 +50,9 @@ db.knex.schema.hasTable('users').then(function(exists) {
       user.increments('id').primary();
       user.string('username', 100);
       user.string('password', 100);
-      user.datetime('created_at');
-      user.datetime('updated_at');
+      user.timestamps();
     }).then(function(table) {
-      console.log('Created Table', tables);
+      console.log('Created Table', table);
     });
   }
 });
